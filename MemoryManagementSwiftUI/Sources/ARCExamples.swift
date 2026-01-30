@@ -7,12 +7,54 @@
 
 import SwiftUI
 
-struct ARCExamples: View {
+final class ARCTrackedObject {
+    let id: Int
+
+    init(id: Int) {
+        self.id = id
+        print("ARCTrackedObject \(id) init")
+    }
+
+    deinit {
+        print("ARCTrackedObject \(id) deinit")
+    }
+}
+
+struct ARCExamplesView: View {
+    @State private var showObject = false
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack(spacing: 16) {
+            Text("ARC & SwiftUI")
+                .font(.title)
+
+            Toggle("Create object", isOn: $showObject)
+                .padding()
+
+            if showObject {
+                ARCObjectHolderView()
+            }
+        }
+        .padding()
+    }
+}
+
+struct ARCObjectHolderView: View {
+    @State private var object: ARCTrackedObject? = ARCTrackedObject(id: 1)
+
+    var body: some View {
+        VStack {
+            Text("Object is alive with id \(object?.id ?? -1)")
+            Button("Release object") {
+                object = nil
+            }
+        }
+        .onDisappear {
+            // When the view disappears and object is nil, deinit will have been called
+        }
     }
 }
 
 #Preview {
-    ARCExamples()
+    ARCExamplesView()
 }

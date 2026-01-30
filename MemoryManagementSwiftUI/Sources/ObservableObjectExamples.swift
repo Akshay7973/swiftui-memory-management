@@ -6,13 +6,45 @@
 //
 
 import SwiftUI
+import Combine
 
-struct ObservableObjectExamples: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+final class TimerViewModel: ObservableObject {
+    @Published var ticks = 0
+    private var timer: AnyCancellable?
+
+    init() {
+        timer = Timer.publish(every: 1, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.ticks += 1
+            }
+    }
+
+    deinit {
+        print("TimerViewModel deinit")
     }
 }
 
+struct StateObjectExampleView: View {
+    @StateObject private var viewModel = TimerViewModel()
+
+    var body: some View {
+        VStack {
+            Text("@StateObject ticks: \(viewModel.ticks)")
+            NavigationLink("Push child view") {
+                ObservedObjectChildView(viewModel: viewModel)
+            }
+        }
+    }
+}
+
+struct ObservedObjectChildView: View {
+    @ObservedObject var viewModel: TimerViewModel
+
+    var body: some View {
+        Text("@ObservedObject child ticks: \(viewModel.ticks)")
+    }
+}
 #Preview {
-    ObservableObjectExamples()
+    StateObjectExampleView()
 }
